@@ -1,9 +1,10 @@
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { auth } from "../../utils/firebase";
+import { auth, db } from "../../utils/firebase";
 import { Spinner } from "@nextui-org/react";
 import { AuthContex } from "../../context/authContext";
+import { doc, setDoc } from "firebase/firestore";
 
 function Signup() {
   const [formInput, setFormInput] = useState({
@@ -27,7 +28,8 @@ function Signup() {
 
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const { setUser } = useContext(AuthContex); // Use the context
+  const { user, setUser } = useContext(AuthContex); // Use the context
+
   const handleUserInput = (name, value) => {
     setFormInput({
       ...formInput,
@@ -84,9 +86,9 @@ function Signup() {
         formInput.email,
         formInput.password
       );
-      const user = userCredentials.user;
+      const userCred = userCredentials.user;
 
-      await updateProfile(user, {
+      await updateProfile(userCred, {
         displayName: `${formInput.firstName} ${formInput.lastName}`,
       });
 
@@ -94,11 +96,17 @@ function Signup() {
         isLogin: true,
         userInfo: {
           name: `${formInput.firstName} ${formInput.lastName}`,
-          email: user.email,
-          image: user.photoURL || "", // Add a default image URL if necessary
+          email: userCred.email,
+          image: userCred.photoURL || "", // Add a default image URL if necessary
         },
       });
 
+      //create user ref
+      const userDBRef = doc(db, "users", userCred.uid);
+      // // set user ref in to db
+      console.log("user in signup =>", user.userInfo);
+
+      await setDoc(userDBRef, user.userInfo);
       console.log("User created:", user);
       navigate("/");
     } catch (err) {

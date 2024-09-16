@@ -8,39 +8,46 @@ import {
   NavbarMenuItem,
   Link,
   Button,
-  Avatar,
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
-
-  // Flex, // Make sure Flex is imported from "@nextui-org/react"
+  Spinner,
 } from "@nextui-org/react";
 import { Link as RouterLink } from "react-router-dom";
-import { AutoComplete, Flex, Input } from "antd";
+import { Avatar } from "antd";
 import { useContext, useState } from "react";
 import { AuthContex } from "../context/authContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../utils/firebase";
 import { toast } from "sonner";
-// import { SearchIcon } from "./SearchIcon";
+import { UserOutlined } from "@ant-design/icons";
+import { ProductContext } from "../context/productContex";
+import {
+  Autocomplete,
+  TextField,
+  InputAdornment,
+  IconButton,
+} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 
 function Nav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, setUser } = useContext(AuthContex);
-
-  console.log("user in header", user);
+  const { user } = useContext(AuthContex);
+  const { products, loading } = useContext(ProductContext);
+  const [search, setSearch] = useState("");
+  const [open, setOpen] = useState(false);
 
   const handleLogOUt = async () => {
     signOut(auth)
       .then(() => {
-        toast.success("Event has been created");
-        console.log("signout successful");
+        toast.success("You have successfully logged out.");
       })
       .catch((err) => {
         alert(err);
       });
   };
+
   const menuItems = [
     "Profile",
     "Dashboard",
@@ -54,55 +61,23 @@ function Nav() {
     "Log Out",
   ];
 
-  const Title = (props) => (
-    <Flex align="center" justify="space-between">
-      {props.title}
-      <a
-        href="https://www.google.com/search?q=antd"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        more
-      </a>
-    </Flex>
-  );
+  // Ensure that products.products is defined, or fallback to an empty array
+  const filteredProducts =
+    products?.products?.filter((product) =>
+      product.title.toLowerCase().includes(search.toLowerCase())
+    ) || [];
 
-  const renderItem = (title) => ({
-    value: title,
-    label: (
-      <Flex align="center" justify="space-between">
-        {title}
-      </Flex>
-    ),
-  });
-
-  const options = [
-    {
-      label: <Title title="Libraries" />,
-      options: [
-        renderItem("AntDesign", 10000),
-        renderItem("AntDesign UI", 10600),
-      ],
-    },
-    {
-      label: <Title title="Solutions" />,
-      options: [
-        renderItem("AntDesign UI FAQ", 60100),
-        renderItem("AntDesign FAQ", 30010),
-      ],
-    },
-    {
-      label: <Title title="Articles" />,
-      options: [renderItem("AntDesign design language", 100000)],
-    },
-  ];
+  const handleSearch = () => {
+    console.log(`Search triggered for: ${search}`);
+    // Perform search logic here, like navigating to a search results page
+  };
 
   return (
     <Navbar onMenuOpenChange={setIsMenuOpen}>
       <NavbarContent>
         <NavbarMenuToggle
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-          className="sm:hidden" // Make sure the hidden class works if using Tailwind CSS
+          className="md:hidden"
         />
 
         <NavbarBrand>
@@ -110,7 +85,7 @@ function Nav() {
         </NavbarBrand>
       </NavbarContent>
 
-      <NavbarContent className="hidden sm:flex gap-4" justify="center">
+      <NavbarContent className="hidden md:flex gap-4" justify="center">
         <NavbarItem>
           <Link color="foreground" href="#">
             Features
@@ -129,19 +104,45 @@ function Nav() {
       </NavbarContent>
 
       <NavbarContent>
-        <NavbarItem>
-          <AutoComplete
-            dropdownClassName="certain-category-search-dropdown" // Updated to "dropdownClassName"
-            dropdownMatchSelectWidth={500} // Updated to "dropdownMatchSelectWidth"
-            style={{
-              width: 250,
-            }}
-            options={options}
-            size="large"
-          >
-            <Input.Search size="large" placeholder="input here" />
-          </AutoComplete>
-        </NavbarItem>
+        {loading ? (
+          <Spinner />
+        ) : (
+          <NavbarItem>
+            <Autocomplete
+              freeSolo
+              open={open && search.length > 0}
+              onOpen={() => setOpen(true)}
+              onClose={() => setOpen(false)}
+              options={filteredProducts.map((product) => product.title)}
+              onInputChange={(event, value) => setSearch(value)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Search Products"
+                  variant="outlined"
+                  sx={{ width: 250 }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSearch();
+                      setOpen(false);
+                    }
+                  }}
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={handleSearch}>
+                          <SearchIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              )}
+              noOptionsText="No results found"
+            />
+          </NavbarItem>
+        )}
       </NavbarContent>
 
       {user.isLogin ? (
@@ -149,19 +150,15 @@ function Nav() {
           <Dropdown placement="bottom-end">
             <DropdownTrigger>
               <Avatar
-                isBordered
-                as="button"
-                className="transition-transform"
-                color="secondary"
-                name="Jason Hughes"
-                size="sm"
+                size={"large"}
+                icon={<UserOutlined />}
                 src={user.userInfo?.image}
               />
             </DropdownTrigger>
             <DropdownMenu aria-label="Profile Actions" variant="flat">
               <DropdownItem key="profile" className="h-14 gap-2">
                 <p className="font-semibold">Signed in as</p>
-                <p className="font-semibold">{user.userInfo?.email}</p>
+                <p className="font-semibold">{user.userInfo?.email} </p>
               </DropdownItem>
               <DropdownItem key="settings">My Settings</DropdownItem>
               <DropdownItem key="team_settings">Team Settings</DropdownItem>
@@ -176,7 +173,7 @@ function Nav() {
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
-          <div className="   hidden md:flex  ">
+          <div className="hidden md:flex">
             <h1>{user.userInfo?.name}</h1>
           </div>
         </NavbarContent>
