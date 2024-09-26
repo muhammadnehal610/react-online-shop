@@ -145,6 +145,11 @@ function Nav() {
         )}
       </NavbarContent>
 
+      <NavbarItem>
+        <Badge count={cartItem.length}>
+          <ShoppingCartOutlined className="text-3xl" />
+        </Badge>
+      </NavbarItem>
       {user.isLogin ? (
         <NavbarContent as="div" justify="end" className="flex">
           <Dropdown placement="bottom-end">
