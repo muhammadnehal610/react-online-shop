@@ -15,13 +15,13 @@ import {
   Spinner,
 } from "@nextui-org/react";
 import { Link as RouterLink } from "react-router-dom";
-import { Avatar } from "antd";
+import { Avatar, Badge } from "antd";
 import { useContext, useState } from "react";
 import { AuthContex } from "../context/authContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../utils/firebase";
 import { toast } from "sonner";
-import { UserOutlined } from "@ant-design/icons";
+import { ShoppingCartOutlined, UserOutlined } from "@ant-design/icons";
 import { ProductContext } from "../context/productContex";
 import {
   Autocomplete,
@@ -30,6 +30,7 @@ import {
   IconButton,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import CartContextProvider, { CartContex } from "../context/CartContext";
 
 function Nav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -71,7 +72,7 @@ function Nav() {
     console.log(`Search triggered for: ${search}`);
     // Perform search logic here, like navigating to a search results page
   };
-
+  const { cartItem } = useContext(CartContex);
   return (
     <Navbar onMenuOpenChange={setIsMenuOpen}>
       <NavbarContent>
@@ -146,9 +147,11 @@ function Nav() {
       </NavbarContent>
 
       <NavbarItem>
-        <Badge count={cartItem.length}>
-          <ShoppingCartOutlined className="text-3xl" />
-        </Badge>
+        <RouterLink to={"/cart"}>
+          <Badge count={cartItem.length}>
+            <ShoppingCartOutlined className="text-3xl" />
+          </Badge>
+        </RouterLink>
       </NavbarItem>
       {user.isLogin ? (
         <NavbarContent as="div" justify="end" className="flex">

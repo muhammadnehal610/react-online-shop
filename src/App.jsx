@@ -5,6 +5,7 @@ import Signup from "./page/auth/signup.jsx";
 import Signin from "./page/auth/signin.jsx";
 import Profile from "./page/Proflie.jsx";
 import ProductDetail from "./page/ProductDetail.jsx";
+import CartList from "./page/Cart.jsx";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       <Nav />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/cart" element={<CartList />} />
         <Route path="/auth/signup" element={<Signup />} />
         <Route path="/auth/signin" element={<Signin />} />
         <Route path="/auth/account" element={<Profile />} />

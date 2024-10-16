@@ -52,7 +52,7 @@ function CartList() {
                       <th scope="row">
                         <div className="d-flex align-items-center">
                           <img
-                            src={item.thumbnail}
+                            src={item.image}
                             className="img-fluid rounded-3"
                             style={{ width: 120 }}
                             alt={item.title}

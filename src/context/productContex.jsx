@@ -1,30 +1,38 @@
-import { Spinner } from "@nextui-org/react";
-import axios from "axios";
-import { createContext, useContext, useEffect, useState } from "react";
+// context/ProductContext.js
+import React, { createContext, useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../utils/firebase"; // Import your Firebase setup
 
 export const ProductContext = createContext();
-function ProductContextProvider({ children }) {
+
+const ProductProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios("https://dummyjson.com/products").then((data) => {
-      setProducts(data.data);
-    });
-    setLoading(false);
+    const fetchProducts = async () => {
+      try {
+        const productsCollection = collection(db, "products"); // Your Firestore collection name
+        const productSnapshot = await getDocs(productsCollection);
+        const productList = productSnapshot.docs.map((doc) => ({
+          id: doc.id, // Firestore document ID
+          ...doc.data(),
+        }));
+        setProducts(productList);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
   }, []);
-  console.log(products);
 
   return (
-    <ProductContext.Provider value={{ products, setProducts }}>
-      {loading ? (
-        <div className="w-full h-80 flex justify-center">
-          <Spinner />
-        </div>
-      ) : (
-        children
-      )}
+    <ProductContext.Provider value={{ products, loading }}>
+      {children}
     </ProductContext.Provider>
   );
-}
-export default ProductContextProvider;
+};
+export default ProductProvider;
