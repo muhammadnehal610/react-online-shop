@@ -21,7 +21,11 @@ import { AuthContex } from "../context/authContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../utils/firebase";
 import { toast } from "sonner";
-import { ShoppingCartOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  ProductOutlined,
+  ShoppingCartOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { ProductContext } from "../context/productContex";
 import {
   Autocomplete,
@@ -30,7 +34,7 @@ import {
   IconButton,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import CartContextProvider, { CartContex } from "../context/CartContext";
+import { CartContext } from "../context/CartContext";
 
 function Nav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -72,7 +76,7 @@ function Nav() {
     console.log(`Search triggered for: ${search}`);
     // Perform search logic here, like navigating to a search results page
   };
-  const { cartItem } = useContext(CartContex);
+  const { cartItems } = useContext(CartContext);
   return (
     <Navbar onMenuOpenChange={setIsMenuOpen}>
       <NavbarContent>
@@ -148,9 +152,14 @@ function Nav() {
 
       <NavbarItem>
         <RouterLink to={"/cart"}>
-          <Badge count={cartItem.length}>
-            <ShoppingCartOutlined className="text-3xl" />
+          <Badge count={cartItems.length}>
+            <ShoppingCartOutlined style={{ fontSize: 40 }} />
           </Badge>
+        </RouterLink>
+      </NavbarItem>
+      <NavbarItem>
+        <RouterLink to={"/purches"}>
+          <ProductOutlined style={{ fontSize: 40 }} />
         </RouterLink>
       </NavbarItem>
       {user.isLogin ? (

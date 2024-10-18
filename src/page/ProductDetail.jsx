@@ -1,17 +1,15 @@
-import { CheckOutlined, MinusOutlined, PlusOutlined } from "@ant-design/icons";
-import { Spinner } from "@nextui-org/react";
-import { Rate, Tabs } from "antd";
 import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { CartContex } from "../context/CartContext";
-import { db } from "../utils/firebase"; // Ensure you import your Firestore instance
-import { doc, getDoc } from "firebase/firestore"; // Import Firestore functions
+import { CartContext } from "../context/CartContext";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../utils/firebase";
+import { Rate, Spin } from "antd";
 
 function ProductDetail() {
   const { id } = useParams();
-  const { addItemToCart, removeCartItem, isItemAdded } = useContext(CartContex);
+  const { addItemToCart, isItemAdded } = useContext(CartContext);
 
-  const [products, setProducts] = useState(null); // Initialize with null to handle loading state
+  const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,7 +19,7 @@ function ProductDetail() {
         const productRef = doc(db, "products", id); // Use Firestore document reference
         const productSnap = await getDoc(productRef);
         if (productSnap.exists()) {
-          setProducts(productSnap.data());
+          setProduct({ ...productSnap.data(), id }); // Make sure ID is set properly
         } else {
           console.log("No such document!");
         }
@@ -35,13 +33,13 @@ function ProductDetail() {
     fetchProductDetails();
   }, [id]);
 
-  const cartItem = isItemAdded(products?.id); // Get the cart item from CartContext
-  const cartQuantity = cartItem ? cartItem.cartQuantity : 0; // Default to 0 if the item is not added yet
+  const cartItem = product ? isItemAdded(product.id) : null; // Check if the product is in the cart
+  const cartQuantity = cartItem ? cartItem.cartQuantity : 0; // Get the cart quantity, default to 0
 
   return (
     <>
       {loading ? (
-        <Spinner />
+        <Spin />
       ) : (
         <div>
           <section className="py-5">
@@ -57,29 +55,16 @@ function ProductDetail() {
                         margin: "auto",
                       }}
                       className="rounded-4 fit"
-                      src={products?.image}
-                      alt={products?.title}
+                      src={product?.image}
+                      alt={product?.title}
                     />
-                  </div>
-                  {/* Thumbnails */}
-                  <div className="d-flex justify-content-center mb-3 gap-3">
-                    {products?.images?.map((image, index) => (
-                      <img
-                        key={index}
-                        width={60}
-                        height={60}
-                        className="rounded-2"
-                        src={image}
-                        alt={`Thumbnail ${index}`}
-                      />
-                    ))}
                   </div>
                 </aside>
 
                 {/* Product Details */}
                 <main className="col-lg-6">
                   <div className="ps-lg-3">
-                    <h4 className="title text-dark">{products?.title}</h4>
+                    <h4 className="title text-dark">{product?.title}</h4>
 
                     {/* Rating and Orders */}
                     <div className="d-flex flex-row my-3">
@@ -96,17 +81,17 @@ function ProductDetail() {
 
                     {/* Price */}
                     <div className="mb-3">
-                      <span className="h5">${products?.price}</span>
+                      <span className="h5">${product?.price}</span>
                       <span className="text-muted"> / per box</span>
                     </div>
 
                     {/* Description */}
-                    <p>{products?.description}</p>
+                    <p>{product?.description}</p>
 
-                    {/* Action Buttons */}
+                    {/* Action Button */}
                     <button
                       className="btn btn-primary shadow-0"
-                      onClick={() => addItemToCart(products)}
+                      onClick={() => addItemToCart(product)}
                     >
                       {cartItem ? `Added (${cartQuantity})` : "Add to cart"}
                     </button>

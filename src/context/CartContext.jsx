@@ -1,72 +1,74 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
 
-export const CartContex = createContext();
+export const CartContext = createContext();
 
 function CartContextProvider({ children }) {
-  const [cartItem, setCartItem] = useState([]);
+  const [cartItems, setCartItems] = useState(() => {
+    const savedCart = localStorage.getItem("cart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
 
-  console.log("Items in cart =>", cartItem);
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cartItems));
+  }, [cartItems]);
 
   // Function to add item to the cart
   function addItemToCart(item) {
-    const itemIndex = cartItem.findIndex((data) => data.id === item.id);
+    const existingItemIndex = cartItems.findIndex(
+      (cartItem) => cartItem.id === item.id
+    );
 
-    if (itemIndex === -1) {
-      // Item not in cart, add new item with quantity 1
-      setCartItem([...cartItem, { ...item, cartQuantity: 1 }]);
+    if (existingItemIndex === -1) {
+      setCartItems([...cartItems, { ...item, cartQuantity: 1 }]);
     } else {
-      // Item already in cart, increase quantity
-      const updatedCart = cartItem.map((cartItem, index) =>
-        index === itemIndex
+      const updatedCartItems = cartItems.map((cartItem, index) =>
+        index === existingItemIndex
           ? { ...cartItem, cartQuantity: cartItem.cartQuantity + 1 }
           : cartItem
       );
-      setCartItem(updatedCart);
+      setCartItems(updatedCartItems);
     }
   }
 
-  // Function to decrease the item quantity or remove if quantity is 1
-  function removeItemFromCart(item) {
-    const itemIndex = cartItem.findIndex((data) => data.id === item.id);
-
-    if (itemIndex !== -1) {
-      if (cartItem[itemIndex].cartQuantity > 1) {
-        const updatedCart = cartItem.map((cartItem, index) =>
-          index === itemIndex
-            ? { ...cartItem, cartQuantity: cartItem.cartQuantity - 1 }
-            : cartItem
-        );
-        setCartItem(updatedCart);
-      } else {
-        // Remove item completely if quantity is 1
-        removeCartItem(item.id);
-      }
-    }
-  }
-
-  // Function to remove an item from the cart entirely
+  // Function to remove item from the cart
   function removeCartItem(id) {
-    const updatedCart = cartItem.filter((item) => item.id !== id);
-    setCartItem(updatedCart);
+    const updatedCartItems = cartItems.filter((item) => item.id !== id);
+    setCartItems(updatedCartItems);
   }
 
-  // Function to check if an item is already added in the cart
+  // Function to set cart item quantity
+  function setCartQuantity(id, quantity) {
+    const updatedCartItems = cartItems.map((item) =>
+      item.id === id ? { ...item, cartQuantity: quantity } : item
+    );
+    setCartItems(updatedCartItems);
+  }
+
+  // Function to check if an item is already in the cart
   function isItemAdded(id) {
-    return cartItem.some((item) => item.id === id);
+    return cartItems.find((item) => item.id === id);
+  }
+
+  // Function to clear the cart
+  function clearCart() {
+    setCartItems([]); // Set cartItems to an empty array
+    localStorage.removeItem("cart"); // Clear cart from localStorage
   }
 
   return (
-    <CartContex.Provider
+    <CartContext.Provider
       value={{
-        cartItem,
+        cartItems,
         addItemToCart,
-        removeItemFromCart,
         removeCartItem,
+        setCartQuantity,
         isItemAdded,
+        clearCart, // Provide clearCart function to the context
+        setCartItems,
       }}
     >
       {children}
-    </CartContex.Provider>
+    </CartContext.Provider>
   );
 }
 

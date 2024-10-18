@@ -34,7 +34,7 @@ function Signin() {
         // The signed-in user info.
         const user = result.user;
         console.log("user=>", user);
-        navigate("/");
+
         // IdP data available using getAdditionalUserInfo(result)
         // ...
       })
