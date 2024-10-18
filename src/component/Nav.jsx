@@ -66,7 +66,6 @@ function Nav() {
     "Log Out",
   ];
 
-  // Ensure that products.products is defined, or fallback to an empty array
   const filteredProducts =
     products?.products?.filter((product) =>
       product.title.toLowerCase().includes(search.toLowerCase())
@@ -74,9 +73,10 @@ function Nav() {
 
   const handleSearch = () => {
     console.log(`Search triggered for: ${search}`);
-    // Perform search logic here, like navigating to a search results page
   };
+
   const { cartItems } = useContext(CartContext);
+
   return (
     <Navbar onMenuOpenChange={setIsMenuOpen}>
       <NavbarContent>
@@ -104,6 +104,16 @@ function Nav() {
         <NavbarItem>
           <Link color="foreground" href="#">
             Integrations
+          </Link>
+        </NavbarItem>
+        {/* Added "Go to Panel" item */}
+        <NavbarItem>
+          <Link
+            href="https://e-ecom-panel.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Go to Panel
           </Link>
         </NavbarItem>
       </NavbarContent>

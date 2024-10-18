@@ -221,6 +221,8 @@ function CartList() {
         visible={isModalVisible}
         onOk={() => setIsModalVisible(false)}
         onCancel={() => setIsModalVisible(false)}
+        width={900}
+        footer={false}
       >
         <Signin />
       </Modal>
